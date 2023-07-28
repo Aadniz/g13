@@ -403,7 +403,8 @@ void G13_Device::InitCommands() {
         // TODO: this could be part of a G13::Constants class I think
         const std::set<std::string> modes = {"ABSOLUTE",  "RELATIVE",
                                              "KEYS",      "CALCENTER",
-                                             "CALBOUNDS", "CALNORTH"};
+                                             "CALBOUNDS", "CALNORTH",
+                                             "JOYSTICK"};
         int index = 0;
         for (auto &test : modes) {
           if (test == mode) {
