@@ -7,3 +7,5 @@ pbm2lpbm
 .settings/*
 GIT-VERSION.h
 GIT-VERSION-FILE
+.idea
+cmake-build-*
