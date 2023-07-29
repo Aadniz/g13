@@ -38,8 +38,7 @@ G13_StickZone *G13_Stick::zone(const std::string &name, bool create) {
     }
   }
   if (create) {
-    m_zones.push_back(
-        G13_StickZone(*this, name, G13_ZoneBounds(0.0, 0.0, 0.0, 0.0)));
+    m_zones.emplace_back(*this, name, G13_ZoneBounds(0.0, 0.0, 0.0, 0.0));
     return zone(name);
   }
   return nullptr;
@@ -155,10 +154,9 @@ void G13_Stick::ParseJoystick(const unsigned char *buf) {
     dy = 1.0 - dy;
   }
 
-  G13_DBG("x=" << m_current_pos.x << " y=" << m_current_pos.y << " dx=" << dx
-               << " dy=" << dy);
   G13_ZoneCoord jpos(dx, dy);
   if (m_stick_mode == STICK_ABSOLUTE) {
+    G13_DBG("x=" << m_current_pos.x << " y=" << m_current_pos.y << " dx=" << dx << " dy=" << dy);
     _keypad.SendEvent(EV_ABS, ABS_X, m_current_pos.x);
     _keypad.SendEvent(EV_ABS, ABS_Y, m_current_pos.y);
 
@@ -170,9 +168,9 @@ void G13_Stick::ParseJoystick(const unsigned char *buf) {
       return;
 
   } else if (m_stick_mode == STICK_JOYSTICK) {
+      G13_DBG("x=" << m_current_pos.x << " y=" << m_current_pos.y << " dx=" << dx << " dy=" << dy);
       _keypad.SendEvent(EV_ABS, ABS_X, m_current_pos.x);
       _keypad.SendEvent(EV_ABS, ABS_Y, m_current_pos.y);
-      _keypad.SendEvent(EV_ABS, ABS_Z, m_current_pos.y);
       return;
   } else {
     /*    send_event(g13->uinput_file, EV_REL, REL_X, stick_x/16 - 8);
