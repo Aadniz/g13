@@ -69,74 +69,84 @@ int G13CreateFifo(const char *fifo_name) {
             perror("UI_ABS_SETUP");
     }
 
-int G13CreateUinput(G13_Device *g13) {
-  struct uinput_user_dev uinp {};
-  struct input_event event {};
-  const char *dev_uinput_fname =
-      access("/dev/input/uinput", F_OK) == 0
-          ? "/dev/input/uinput"
-          : access("/dev/uinput", F_OK) == 0 ? "/dev/uinput" : nullptr;
-  if (!dev_uinput_fname) {
-    G13_ERR("Could not find an uinput device");
-    return -1;
-  }
-  if (access(dev_uinput_fname, W_OK) != 0) {
-    G13_ERR(dev_uinput_fname << " doesn't grant write permissions");
-    return -1;
-  }
-  int ufile = open(dev_uinput_fname, O_WRONLY | O_NDELAY);
-  if (ufile <= 0) {
-    G13_ERR("Could not open uinput");
-    return -1;
-  }
-  memset(&uinp, 0, sizeof(uinp));
-  char name[] = "G13";
-  strncpy(uinp.name, name, sizeof(name));
-  uinp.id.version = 1;
-  uinp.id.bustype = BUS_USB;
-  uinp.id.product = G13_PRODUCT_ID;
-  uinp.id.vendor = G13_VENDOR_ID;
-    //uinp.absfuzz[ABS_X] = 4;
-  //  uinp.absfuzz[ABS_Y] = 4;
-  //  uinp.absflat[ABS_X] = 0x80;
-  //  uinp.absflat[ABS_Y] = 0x80;
+    int G13CreateUinput(G13_Device* g13)
+    {
+        struct uinput_user_dev uinp {};
+        const char* dev_uinput_fname =
+                access("/dev/input/uinput", F_OK) == 0
+                ? "/dev/input/uinput"
+                : access("/dev/uinput", F_OK) == 0 ? "/dev/uinput" : nullptr;
+        if (!dev_uinput_fname) {
+            G13_ERR("Could not find an uinput device");
+            return -1;
+        }
+        if (access(dev_uinput_fname, W_OK) != 0) {
+            G13_ERR(dev_uinput_fname << " doesn't grant write permissions");
+            return -1;
+        }
+        int ufile = open(dev_uinput_fname, O_WRONLY | O_NDELAY);
+        if (ufile <= 0) {
+            G13_ERR("Could not open uinput");
+            return -1;
+        }
+        memset(&uinp, 0, sizeof(uinp));
+        char name[] = "G13";
+        strncpy(uinp.name, name, sizeof(name));
+        uinp.id.version = 2;
+        uinp.id.bustype = BUS_USB;
+        uinp.id.product = G13_PRODUCT_ID;
+        uinp.id.vendor = G13_VENDOR_ID;
 
-  ioctl(ufile, UI_SET_EVBIT, EV_KEY);
-  ioctl(ufile, UI_SET_EVBIT, EV_ABS);
-    setup_abs(ufile, ABS_X,  0, 256);
-    setup_abs(ufile, ABS_Y,  0, 256);
-    setup_abs(ufile, ABS_Z,  0, 256);
-  /*  ioctl(ufile, UI_SET_EVBIT, EV_REL);*/
-//  ioctl(ufile, UI_SET_MSCBIT, MSC_SCAN);
-  ioctl(ufile, UI_SET_ABSBIT, ABS_X);
-  ioctl(ufile, UI_SET_ABSBIT, ABS_Y);
-  ioctl(ufile, UI_SET_ABSBIT, ABS_Z);
-//  for (int i = 0; i < 256; i++) {
-//    ioctl(ufile, UI_SET_KEYBIT, i);
-//  }
+        ioctl(ufile, UI_SET_EVBIT, EV_KEY);
+        ioctl(ufile, UI_SET_EVBIT, EV_ABS);
+        ioctl(ufile, UI_SET_EVBIT, EV_REL);
 
-  // Mouse buttons
-//  for (int i = 0x110; i < 0x118; i++) {
-//    ioctl(ufile, UI_SET_KEYBIT, i);
-//  }
-//  ioctl(ufile, UI_SET_KEYBIT, BTN_THUMB);
-    ioctl(ufile, UI_SET_KEYBIT, BTN_A);
-    ioctl(ufile, UI_SET_KEYBIT, BTN_B);
-    ioctl(ufile, UI_SET_KEYBIT, BTN_X);
-    ioctl(ufile, UI_SET_KEYBIT, BTN_Y);
+        // Setup absolute axes for the left and right sticks
+        setup_abs(ufile, ABS_X, -32767, 32767);    // Left Stick X-axis
+        setup_abs(ufile, ABS_RX, -32767, 32767);   // Right Stick X-axis
+        setup_abs(ufile, ABS_Y, -32767, 32767);    // Left Stick Y-axis
+        setup_abs(ufile, ABS_RY, -32767, 32767);   // Right Stick Y-axis
+        setup_abs(ufile, REL_X, -32767, 32767);    // Left Stick X-axis
+        setup_abs(ufile, REL_RX, -32767, 32767);   // Right Stick X-axis
+        setup_abs(ufile, REL_Y, -32767, 32767);    // Left Stick Y-axis
+        setup_abs(ufile, REL_RY, -32767, 32767);   // Right Stick Y-axis
 
-  int retcode = write(ufile, &uinp, sizeof(uinp));
-  if (retcode < 0) {
-    G13_ERR("Could not write to uinput device (" << retcode << ")");
-    return -1;
-  }
-  retcode = ioctl(ufile, UI_DEV_CREATE);
-  if (retcode) {
-    G13_ERR("Error creating uinput device for G13");
-    return -1;
-  }
-  return ufile;
-}
+        ioctl(ufile, UI_SET_MSCBIT, MSC_SCAN);
+
+        // Enable absolute axes for the left and right sticks
+        ioctl(ufile, UI_SET_ABSBIT, ABS_X);
+        ioctl(ufile, UI_SET_ABSBIT, ABS_RX);
+        ioctl(ufile, UI_SET_ABSBIT, ABS_Y);
+        ioctl(ufile, UI_SET_ABSBIT, ABS_RY);
+
+        // Enable relative axes for the left and right sticks
+        ioctl(ufile, UI_SET_RELBIT, REL_X);
+        ioctl(ufile, UI_SET_RELBIT, REL_RX);
+        ioctl(ufile, UI_SET_RELBIT, REL_Y);
+        ioctl(ufile, UI_SET_RELBIT, REL_RY);
+
+        // Enable the necessary buttons
+        ioctl(ufile, UI_SET_KEYBIT, BTN_A);
+        ioctl(ufile, UI_SET_KEYBIT, BTN_B);
+        ioctl(ufile, UI_SET_KEYBIT, BTN_X);
+        ioctl(ufile, UI_SET_KEYBIT, BTN_Y);
+        ioctl(ufile, UI_SET_KEYBIT, BTN_TL);        // Left Bumper (LB)
+        ioctl(ufile, UI_SET_KEYBIT, BTN_TR);        // Right Bumper (RB)
+        ioctl(ufile, UI_SET_KEYBIT, BTN_TRIGGER);   // Left Trigger (LT)
+        ioctl(ufile, UI_SET_KEYBIT, BTN_THUMBR);    // Right Trigger (RT)
+
+        int retcode = write(ufile, &uinp, sizeof(uinp));
+        if (retcode < 0) {
+            G13_ERR("Could not write to uinput device (" << retcode << ")");
+            return -1;
+        }
+        retcode = ioctl(ufile, UI_DEV_CREATE);
+        if (retcode) {
+            G13_ERR("Error creating uinput device for G13");
+            return -1;
+        }
+        return ufile;
+    }
 
 // *************************************************************************
 
