@@ -54,6 +54,21 @@ int G13CreateFifo(const char *fifo_name) {
   return open(fifo_name, O_RDWR | O_NONBLOCK);
 }
 
+    static void setup_abs(int fd, unsigned chan, int min, int max)
+    {
+        if (ioctl(fd, UI_SET_ABSBIT, chan))
+            perror("UI_SET_ABSBIT");
+
+        struct uinput_abs_setup s =
+                {
+                        .code = chan,
+                        .absinfo = { .minimum = min,  .maximum = max },
+                };
+
+        if (ioctl(fd, UI_ABS_SETUP, &s))
+            perror("UI_ABS_SETUP");
+    }
+
 int G13CreateUinput(G13_Device *g13) {
   struct uinput_user_dev uinp {};
   struct input_event event {};
@@ -81,32 +96,34 @@ int G13CreateUinput(G13_Device *g13) {
   uinp.id.bustype = BUS_USB;
   uinp.id.product = G13_PRODUCT_ID;
   uinp.id.vendor = G13_VENDOR_ID;
-  uinp.absmin[ABS_X] = 0;
-  uinp.absmin[ABS_Y] = 0;
-  uinp.absmax[ABS_X] = 0xff;
-  uinp.absmax[ABS_Y] = 0xff;
-  //  uinp.absfuzz[ABS_X] = 4;
+    //uinp.absfuzz[ABS_X] = 4;
   //  uinp.absfuzz[ABS_Y] = 4;
   //  uinp.absflat[ABS_X] = 0x80;
   //  uinp.absflat[ABS_Y] = 0x80;
 
   ioctl(ufile, UI_SET_EVBIT, EV_KEY);
   ioctl(ufile, UI_SET_EVBIT, EV_ABS);
+    setup_abs(ufile, ABS_X,  0, 256);
+    setup_abs(ufile, ABS_Y,  0, 256);
+    setup_abs(ufile, ABS_Z,  0, 256);
   /*  ioctl(ufile, UI_SET_EVBIT, EV_REL);*/
-  ioctl(ufile, UI_SET_MSCBIT, MSC_SCAN);
+//  ioctl(ufile, UI_SET_MSCBIT, MSC_SCAN);
   ioctl(ufile, UI_SET_ABSBIT, ABS_X);
   ioctl(ufile, UI_SET_ABSBIT, ABS_Y);
-  /*  ioctl(ufile, UI_SET_RELBIT, REL_X);
-   ioctl(ufile, UI_SET_RELBIT, REL_Y);*/
-  for (int i = 0; i < 256; i++) {
-    ioctl(ufile, UI_SET_KEYBIT, i);
-  }
+  ioctl(ufile, UI_SET_ABSBIT, ABS_Z);
+//  for (int i = 0; i < 256; i++) {
+//    ioctl(ufile, UI_SET_KEYBIT, i);
+//  }
 
   // Mouse buttons
-  for (int i = 0x110; i < 0x118; i++) {
-    ioctl(ufile, UI_SET_KEYBIT, i);
-  }
-  ioctl(ufile, UI_SET_KEYBIT, BTN_THUMB);
+//  for (int i = 0x110; i < 0x118; i++) {
+//    ioctl(ufile, UI_SET_KEYBIT, i);
+//  }
+//  ioctl(ufile, UI_SET_KEYBIT, BTN_THUMB);
+    ioctl(ufile, UI_SET_KEYBIT, BTN_A);
+    ioctl(ufile, UI_SET_KEYBIT, BTN_B);
+    ioctl(ufile, UI_SET_KEYBIT, BTN_X);
+    ioctl(ufile, UI_SET_KEYBIT, BTN_Y);
 
   int retcode = write(ufile, &uinp, sizeof(uinp));
   if (retcode < 0) {

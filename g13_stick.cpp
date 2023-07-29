@@ -169,8 +169,8 @@ void G13_Stick::ParseJoystick(const unsigned char *buf) {
 
   } else if (m_stick_mode == STICK_JOYSTICK) {
       G13_DBG("x=" << m_current_pos.x << " y=" << m_current_pos.y << " dx=" << dx << " dy=" << dy);
-      _keypad.SendEvent(EV_ABS, ABS_X, m_current_pos.x);
-      _keypad.SendEvent(EV_ABS, ABS_Y, m_current_pos.y);
+      _keypad.SendEvent(EV_ABS, ABS_X, (m_current_pos.x-128)*255);
+      _keypad.SendEvent(EV_ABS, ABS_Y, (m_current_pos.y-128)*255);
       return;
   } else {
     /*    send_event(g13->uinput_file, EV_REL, REL_X, stick_x/16 - 8);
