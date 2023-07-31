@@ -58,8 +58,10 @@ void G13_Stick::set_mode(stick_mode_t m) {
       m_bounds.br = G13_StickCoord(0, 0);
     break;
   case STICK_JOYSTICK:
-  case STICK_ABSOLUTE:
+  case STICK_JOYSTICKR:
   case STICK_KEYS:
+      break;
+  case STICK_ABSOLUTE:
   case STICK_CALCENTER:
   case STICK_CALNORTH:
       break;
@@ -129,6 +131,7 @@ void G13_Stick::ParseJoystick(const unsigned char *buf) {
     m_bounds.expand(m_current_pos);
     return;
   case STICK_JOYSTICK:
+  case STICK_JOYSTICKR:
   case STICK_ABSOLUTE:
   case STICK_KEYS:
     break;
@@ -168,9 +171,14 @@ void G13_Stick::ParseJoystick(const unsigned char *buf) {
       return;
 
   } else if (m_stick_mode == STICK_JOYSTICK) {
-      G13_DBG("x=" << m_current_pos.x << " y=" << m_current_pos.y << " dx=" << dx << " dy=" << dy);
-      _keypad.SendEvent(EV_ABS, ABS_X, m_current_pos.x);
-      _keypad.SendEvent(EV_ABS, ABS_Y, m_current_pos.y);
+      G13_DBG("x=" << (m_current_pos.x-128)*256 << " y=" << (m_current_pos.y-128)*256 << " dx=" << dx << " dy=" << dy);
+      _keypad.SendEvent(EV_ABS, ABS_X, (m_current_pos.x-128)*256);
+      _keypad.SendEvent(EV_ABS, ABS_Y, (m_current_pos.y-128)*256);
+      return;
+  } else if (m_stick_mode == STICK_JOYSTICKR) {
+      G13_DBG("x=" << (m_current_pos.x-128)*256 << " y=" << (m_current_pos.y-128)*256 << " dx=" << dx << " dy=" << dy);
+      _keypad.SendEvent(EV_ABS, ABS_RX, (m_current_pos.x-128)*256);
+      _keypad.SendEvent(EV_ABS, ABS_RY, (m_current_pos.y-128)*256);
       return;
   } else {
     /*    send_event(g13->uinput_file, EV_REL, REL_X, stick_x/16 - 8);

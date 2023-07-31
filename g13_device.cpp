@@ -81,10 +81,15 @@ int G13CreateUinput(G13_Device *g13) {
   uinp.id.bustype = BUS_USB;
   uinp.id.product = G13_PRODUCT_ID;
   uinp.id.vendor = G13_VENDOR_ID;
-  uinp.absmin[ABS_X] = 0;
-  uinp.absmin[ABS_Y] = 0;
-  uinp.absmax[ABS_X] = 0xff;
-  uinp.absmax[ABS_Y] = 0xff;
+
+  uinp.absmin[ABS_X] = -32768;
+  uinp.absmin[ABS_Y] = -32768;
+  uinp.absmax[ABS_X] = 32768;
+  uinp.absmax[ABS_Y] = 32768;
+  uinp.absmin[ABS_RX] = -32768;
+  uinp.absmin[ABS_RY] = -32768;
+  uinp.absmax[ABS_RX] = 32768;
+  uinp.absmax[ABS_RY] = 32768;
   //  uinp.absfuzz[ABS_X] = 4;
   //  uinp.absfuzz[ABS_Y] = 4;
   //  uinp.absflat[ABS_X] = 0x80;
@@ -96,16 +101,21 @@ int G13CreateUinput(G13_Device *g13) {
   ioctl(ufile, UI_SET_MSCBIT, MSC_SCAN);
   ioctl(ufile, UI_SET_ABSBIT, ABS_X);
   ioctl(ufile, UI_SET_ABSBIT, ABS_Y);
+  ioctl(ufile, UI_SET_ABSBIT, ABS_RX);
+  ioctl(ufile, UI_SET_ABSBIT, ABS_RY);
   /*  ioctl(ufile, UI_SET_RELBIT, REL_X);
    ioctl(ufile, UI_SET_RELBIT, REL_Y);*/
-  for (int i = 0; i < 256; i++) {
+  for (int i = 0; i < 110; i++) {
+    ioctl(ufile, UI_SET_KEYBIT, i);
+  }
+  for (int i = 114; i < 140; i++) {
     ioctl(ufile, UI_SET_KEYBIT, i);
   }
 
   // Mouse buttons
-  for (int i = 0x110; i < 0x118; i++) {
-    ioctl(ufile, UI_SET_KEYBIT, i);
-  }
+//  for (int i = 0x110; i < 0x118; i++) {
+//    ioctl(ufile, UI_SET_KEYBIT, i);
+//  }
   ioctl(ufile, UI_SET_KEYBIT, BTN_THUMB);
 
   int retcode = write(ufile, &uinp, sizeof(uinp));
@@ -404,7 +414,7 @@ void G13_Device::InitCommands() {
         const std::set<std::string> modes = {"ABSOLUTE",  "RELATIVE",
                                              "KEYS",      "CALCENTER",
                                              "CALBOUNDS", "CALNORTH",
-                                             "JOYSTICK"};
+                                             "JOYSTICK", "JOYSTICKR"};
         int index = 0;
         for (auto &test : modes) {
           if (test == mode) {
