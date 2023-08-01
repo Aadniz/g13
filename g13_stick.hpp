@@ -22,11 +22,13 @@ class G13_StickZone;
 
 enum stick_mode_t {
   STICK_ABSOLUTE,
-  // STICK_RELATIVE,
-  STICK_KEYS,
-  STICK_CALCENTER,
   STICK_CALBOUNDS,
-  STICK_CALNORTH
+  STICK_CALCENTER,
+  STICK_CALNORTH,
+  STICK_JOYSTICK,
+  STICK_JOYSTICKR,
+  // STICK_RELATIVE,
+  STICK_KEYS
 };
 
 class G13_Stick {
@@ -36,6 +38,7 @@ public:
   void ParseJoystick(const unsigned char *buf);
 
   void set_mode(stick_mode_t);
+  stick_mode_t get_mode();
   G13_StickZone *zone(const std::string &, bool create = false);
   void RemoveZone(const G13_StickZone &zone);
 

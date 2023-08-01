@@ -123,6 +123,12 @@ int LIBUSB_CALL G13::G13_Manager::HotplugCallbackRemove(
 
 void G13::G13_Manager::SetupDevice(G13_Device *g13) {
 
+    std::string config_fn = getStringConfigValue("config");
+    if (!config_fn.empty()) {
+        G13_OUT("config_fn = " << config_fn);
+        g13->ReadConfigFile(config_fn);
+    }
+
   G13_OUT("Setting up device ");
   g13->RegisterContext(libusbContext);
   if (!logoFilename.empty()) {
@@ -131,12 +137,6 @@ void G13::G13_Manager::SetupDevice(G13_Device *g13) {
 
   G13_OUT("Active Stick zones ");
   g13->stick().dump(std::cout);
-
-  std::string config_fn = getStringConfigValue("config");
-  if (!config_fn.empty()) {
-    G13_OUT("config_fn = " << config_fn);
-    g13->ReadConfigFile(config_fn);
-  }
 }
 
 void G13::G13_Manager::ArmHotplugCallbacks() {

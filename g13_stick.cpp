@@ -38,8 +38,7 @@ G13_StickZone *G13_Stick::zone(const std::string &name, bool create) {
     }
   }
   if (create) {
-    m_zones.push_back(
-        G13_StickZone(*this, name, G13_ZoneBounds(0.0, 0.0, 0.0, 0.0)));
+    m_zones.emplace_back(*this, name, G13_ZoneBounds(0.0, 0.0, 0.0, 0.0));
     return zone(name);
   }
   return nullptr;
@@ -58,15 +57,19 @@ void G13_Stick::set_mode(stick_mode_t m) {
     m_bounds.tl = G13_StickCoord(255, 255);
       m_bounds.br = G13_StickCoord(0, 0);
     break;
-  case STICK_ABSOLUTE:
-    break;
+  case STICK_JOYSTICK:
+  case STICK_JOYSTICKR:
   case STICK_KEYS:
-    break;
+      break;
+  case STICK_ABSOLUTE:
   case STICK_CALCENTER:
-    break;
   case STICK_CALNORTH:
-    break;
+      break;
   }
+}
+
+stick_mode_t G13_Stick::get_mode() {
+    return m_stick_mode;
 }
 
 void G13_Stick::RecalcCalibrated() {}
@@ -131,9 +134,9 @@ void G13_Stick::ParseJoystick(const unsigned char *buf) {
   case STICK_CALBOUNDS:
     m_bounds.expand(m_current_pos);
     return;
-
+  case STICK_JOYSTICK:
+  case STICK_JOYSTICKR:
   case STICK_ABSOLUTE:
-    break;
   case STICK_KEYS:
     break;
   }
@@ -158,20 +161,29 @@ void G13_Stick::ParseJoystick(const unsigned char *buf) {
     dy = 1.0 - dy;
   }
 
-  G13_DBG("x=" << m_current_pos.x << " y=" << m_current_pos.y << " dx=" << dx
-               << " dy=" << dy);
   G13_ZoneCoord jpos(dx, dy);
   if (m_stick_mode == STICK_ABSOLUTE) {
-    _keypad.SendEvent(EV_ABS, ABS_X, m_current_pos.x);
-    _keypad.SendEvent(EV_ABS, ABS_Y, m_current_pos.y);
+    G13_DBG("x=" << m_current_pos.x << " y=" << m_current_pos.y << " dx=" << dx << " dy=" << dy);
+      _keypad.SendEvent(EV_ABS, ABS_X, (m_current_pos.x-128)*256);
+      _keypad.SendEvent(EV_ABS, ABS_Y, (m_current_pos.y-128)*256);
 
   } else if (m_stick_mode == STICK_KEYS) {
-    // BOOST_FOREACH (G13_StickZone& zone, m_zones) { zone.test(jpos); }
-    for (auto &zone : m_zones) {
-      zone.test(jpos);
-    }
-    return;
+      // BOOST_FOREACH (G13_StickZone& zone, m_zones) { zone.test(jpos); }
+      for (auto &zone : m_zones) {
+          zone.test(jpos);
+      }
+      return;
 
+  } else if (m_stick_mode == STICK_JOYSTICK) {
+      G13_DBG("x=" << (m_current_pos.x-128)*256 << " y=" << (m_current_pos.y-128)*256 << " dx=" << dx << " dy=" << dy);
+      _keypad.SendEvent(EV_ABS, ABS_X, (m_current_pos.x-128)*256);
+      _keypad.SendEvent(EV_ABS, ABS_Y, (m_current_pos.y-128)*256);
+      return;
+  } else if (m_stick_mode == STICK_JOYSTICKR) {
+      G13_DBG("x=" << (m_current_pos.x-128)*256 << " y=" << (m_current_pos.y-128)*256 << " dx=" << dx << " dy=" << dy);
+      _keypad.SendEvent(EV_ABS, ABS_RX, (m_current_pos.x-128)*256);
+      _keypad.SendEvent(EV_ABS, ABS_RY, (m_current_pos.y-128)*256);
+      return;
   } else {
     /*    send_event(g13->uinput_file, EV_REL, REL_X, stick_x/16 - 8);
      SendEvent(g13->uinput_file, EV_REL, REL_Y, stick_y/16 - 8);*/
