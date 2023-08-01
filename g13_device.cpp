@@ -74,6 +74,7 @@ int G13CreateUinput(G13_Device *g13) {
     G13_ERR("Could not open uinput");
     return -1;
   }
+
   memset(&uinp, 0, sizeof(uinp));
   char name[] = "G13";
   strncpy(uinp.name, name, sizeof(name));
@@ -112,10 +113,13 @@ int G13CreateUinput(G13_Device *g13) {
     ioctl(ufile, UI_SET_KEYBIT, i);
   }
 
-  // Mouse buttons
-//  for (int i = 0x110; i < 0x118; i++) {
-//    ioctl(ufile, UI_SET_KEYBIT, i);
-//  }
+  // Check if stick is set to mouse, joystick or keys
+  stick_mode_t stick_mode = g13->stick().get_mode();
+  if (stick_mode != stick_mode_t::STICK_JOYSTICK && stick_mode != stick_mode_t::STICK_JOYSTICKR) {
+      for (int i = 0x110; i < 0x118; i++) {
+          ioctl(ufile, UI_SET_KEYBIT, i);
+      }
+  }
   ioctl(ufile, UI_SET_KEYBIT, BTN_THUMB);
 
   int retcode = write(ufile, &uinp, sizeof(uinp));
@@ -519,7 +523,7 @@ void G13_Device::RegisterContext(libusb_context *libusbContext) {
   LcdInit();
 
   SetModeLeds(leds);
-  SetKeyColor(red, green, blue);
+  //SetKeyColor(red, green, blue);
 
   m_uinput_fid = G13CreateUinput(this);
   m_input_pipe_name = G13_Manager::Instance()->MakePipeName(this, true);

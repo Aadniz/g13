@@ -68,6 +68,10 @@ void G13_Stick::set_mode(stick_mode_t m) {
   }
 }
 
+stick_mode_t G13_Stick::get_mode() {
+    return m_stick_mode;
+}
+
 void G13_Stick::RecalcCalibrated() {}
 
 void G13_Stick::RemoveZone(const G13_StickZone &zone) {
@@ -160,8 +164,8 @@ void G13_Stick::ParseJoystick(const unsigned char *buf) {
   G13_ZoneCoord jpos(dx, dy);
   if (m_stick_mode == STICK_ABSOLUTE) {
     G13_DBG("x=" << m_current_pos.x << " y=" << m_current_pos.y << " dx=" << dx << " dy=" << dy);
-    _keypad.SendEvent(EV_ABS, ABS_X, m_current_pos.x);
-    _keypad.SendEvent(EV_ABS, ABS_Y, m_current_pos.y);
+      _keypad.SendEvent(EV_ABS, ABS_X, (m_current_pos.x-128)*256);
+      _keypad.SendEvent(EV_ABS, ABS_Y, (m_current_pos.y-128)*256);
 
   } else if (m_stick_mode == STICK_KEYS) {
       // BOOST_FOREACH (G13_StickZone& zone, m_zones) { zone.test(jpos); }

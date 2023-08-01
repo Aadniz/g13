@@ -38,6 +38,7 @@ public:
   void ParseJoystick(const unsigned char *buf);
 
   void set_mode(stick_mode_t);
+  stick_mode_t get_mode();
   G13_StickZone *zone(const std::string &, bool create = false);
   void RemoveZone(const G13_StickZone &zone);
 

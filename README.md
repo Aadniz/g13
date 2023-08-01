@@ -94,13 +94,13 @@ that is good. This also shows you which name the keys on the G13 have, and what 
 
 The following options can be used when starting g13d
 
-Option 				|  Description
---------------------|-------------------------------------------------
- --help             | show help
- --logo *arg*       | set logo from file
- --config *arg*     | load config commands from file
- --pipe_in *arg*    | specify name for input pipe
- --pipe_out *arg*   | specify name for output pipe
+| Option           | Description                    |
+|------------------|--------------------------------|
+| --help           | show help                      |
+| --logo *arg*     | set logo from file             |
+| --config *arg*   | load config commands from file |
+| --pipe_in *arg*  | specify name for input pipe    |
+| --pipe_out *arg* | specify name for output pipe   |
 
 ## Configuring / Remote Control
 
@@ -144,14 +144,16 @@ This binds a key or a stick zone.
 
 The stick can be used as an absolute input device or can send key events. You can change modes to one of the following:
 
-Mode       | Description
------------|---------------------------
-KEYS       | translates stick movements into key / action bindings
-ABSOLUTE   | stick becomes mouse with absolute positioning
-RELATIVE   | not quite working yet...
-CALCENTER  | calibrate stick center position
-CALBOUNDS  | calibrate stick boundaries
-CALNORTH   | calibrate stick north
+| Mode      | Description                                                           |
+|-----------|-----------------------------------------------------------------------|
+| KEYS      | translates stick movements into key / action bindings                 |
+| ABSOLUTE  | stick becomes mouse with absolute positioning                         |
+| RELATIVE  | not quite working yet...                                              |
+| CALCENTER | calibrate stick center position                                       |
+| CALBOUNDS | calibrate stick boundaries                                            |
+| CALNORTH  | calibrate stick north                                                 |
+| JOYSTICK  | The stick becomes the left joystick on a xbox/playstation controller  |
+| JOYSTICKR | The stick becomes the right joystick on a xbox/playstation controller |
   
 ### stickzone *operation* *zonename* *args*
 
@@ -159,12 +161,12 @@ defines zones to be used when the stick is in KEYS mode
 
 Where *operation* can be
 
-operation | what it does
-----------|----------------
-add       | add a new zone named *zonename*
-del       | remove zone named *zonename*
-action    | set action for zone, see [Actions]  
-bounds    | set boundaries for zone, *args* are X1, Y1, X2, Y2, where X1/Y1 are top left corner, X2/Y2 are bottom right corner 
+| operation | what it does                                                                                                       |
+|-----------|--------------------------------------------------------------------------------------------------------------------|
+| add       | add a new zone named *zonename*                                                                                    |
+| del       | remove zone named *zonename*                                                                                       |
+| action    | set action for zone, see [Actions]                                                                                 |
+| bounds    | set boundaries for zone, *args* are X1, Y1, X2, Y2, where X1/Y1 are top left corner, X2/Y2 are bottom right corner |
 
 Default created zones are LEFT, RIGHT, UP and DOWN.
 
